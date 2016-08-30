@@ -7,4 +7,4 @@ To access the "upadate stock" page you need to input a username and password as 
 **username**: admin
 **password**: password
 
-To run the application type Rake in terminal inside the "Ruby Final" directory
+To run the application type "Rake" in terminal inside the "Ruby Final" directory
