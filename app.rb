@@ -211,7 +211,6 @@ class Shop
 	end
 
 	def admin_check
-		print `clear`
 		if @count <= 2
 			print"Username: "
 			username = gets.chomp
@@ -254,7 +253,7 @@ class Shop
 			puts "fruit is not in stock or does not exist, try again".cyan
 			update_fruit
 		else
-			@date = Time.now.strftime("%d/%m/%Y %H:%M")
+			
 			puts "Do you want to edit another fruits stock?(y or n)".cyan
 			while(true)
 				input = gets.chomp.downcase
@@ -274,8 +273,7 @@ class Shop
 		end
 	end
 
-	def check_stock
-		
+	def check_stock	
 		@list.each do |item|
 			puts "#{item.fruit_sources_name}".cyan
 			item.fruit_list.each do |item2|
@@ -298,6 +296,7 @@ class Shop
 	end
 
 	def return_to_menu
+		@date = Time.now.strftime("%d/%m/%Y %H:%M")
 		puts "Do you want to go back to the menu (y or n):"
 		answer = gets.chomp.downcase
 		case answer
