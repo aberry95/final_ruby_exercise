@@ -1,7 +1,7 @@
 fruits:
  Waitrose:
   apple:
-   stock: 9
+   stock: 0
   plum:
    stock: 12
   grape:
@@ -14,4 +14,7 @@ fruits:
    stock: 9
   kiwi:
    stock: 25
+ Daryll Co:
+  cherry:
+   stock: 56
 Date: 30/08/2016 09:38

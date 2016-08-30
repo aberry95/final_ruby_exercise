@@ -114,7 +114,6 @@ class Shop
 		@list.each do |item|
 			item.fruit_list.each do |item2|
 				if fruit_name == item2.fruit_name 
-					print
 					puts "We already have that in stock, try again"
 					check = false
 					register_fruit
@@ -280,18 +279,20 @@ class Shop
 		@list.each do |item|
 			puts "#{item.fruit_sources_name}".cyan
 			item.fruit_list.each do |item2|
-				print "Fruit: #{item2.fruit_name.capitalize}\tStock: "
-				if item2.stock.to_i <10 && item2.stock > 0
+				print "\sFruit: #{item2.fruit_name.capitalize}\tStock: "
+				if item2.stock.to_i <10 && item2.stock.to_i > 0 && item2.stock.to_i <100
 					print "#{item2.stock}\n".yellow
 				elsif item2.stock.to_i == 0
 					print "#{item2.stock}\n".red
+				elsif item2.stock.to_i > 99
+					print "#{item2.stock}\n".green
 				else
 					print "#{item2.stock}\n"
 				end
 			end
 		end
 		puts
-		puts "Last Updated: #{@date}".green
+		puts "Last Updated: #{@date}".cyan
 		puts
 		return_to_menu
 	end
