@@ -108,13 +108,13 @@ class Shop
 	
 
 	def register_fruit
-		list_fruit
 		check = true
 		puts "Enter a fruit name"
 		fruit_name = gets.chomp.downcase
 		@list.each do |item|
 			item.fruit_list.each do |item2|
 				if fruit_name == item2.fruit_name 
+					print
 					puts "We already have that in stock, try again"
 					check = false
 					register_fruit
@@ -213,7 +213,7 @@ class Shop
 
 	def admin_check
 		print `clear`
-		if @count <= 3
+		if @count <= 2
 			print"Username: "
 			username = gets.chomp
 			print"Password: "
@@ -232,6 +232,8 @@ class Shop
 			end
 		else
 			puts "You've failed 3 times, you can't change the stock".cyan
+			puts "Goodbye"
+
 		end
 	end
 

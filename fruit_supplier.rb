@@ -14,7 +14,7 @@ class FruitSupplier
 		end
 	end
 
-	def addd_new_fruit(fruit_obj)
+	def add_new_fruit(fruit_obj)
 		@fruit_list.push(fruit_obj)
 	end
 end
