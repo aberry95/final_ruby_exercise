@@ -1,20 +1,17 @@
 fruits:
- Fruity inc:
+ Waitrose:
   apple:
-   stock: 59
-  cherry:
-   stock: 12
-  pear:
-   stock: 17
- Juicy ltd:
-  orange:
-   stock: 290
-  tomato:
-   stock: 90
-  kiwi:
-   stock: 0
- Round co:
+   stock: 9
   plum:
-   stock: 57
+   stock: 12
   grape:
-   stock: 67
+   stock: 123
+ Fruits Co:
+  peach:
+   stock: 728
+ Fruity Ltd:
+  pear:
+   stock: 9
+  kiwi:
+   stock: 25
+Date: 30/08/2016 09:38

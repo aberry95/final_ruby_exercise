@@ -1,34 +1,61 @@
 require 'yaml'
 require 'io/console'
 require 'colorize'
+require 'date'
+require './fruit'
+require './fruit_supplier'
+
+
+module FruitDatabase
+	def load_database
+		begin
+			@stock = YAML.load_file("stock.yml")
+			@info = @stock['fruits']
+			@info.keys.each do |item|
+				@fruit_hash = @info[item]
+				fruit_obj = FruitSupplier.new(item,@fruit_hash)
+				add(fruit_obj)
+			end
+			@date = @stock['Date']
+		rescue
+			print `clear`
+			puts "database has errors or could not be located".cyan
+			puts "Do you want to add stock manually?(y or n)".cyan
+			input = gets.chomp.downcase
+			case input
+			when "y"
+				print `clear`
+				register_fruit
+			when "n"
+				puts "Goodbye"
+				exit
+			end
+		end
+	end
+
+	def add_info_to_database
+		File.open("stock.yml", "w") do |file|
+			file.write("fruits:\n")
+			@list.each do |item|
+				file.write("\s#{item.fruit_sources_name.split.map(&:capitalize)*' '}:\n")
+				item.fruit_list.each do |item2|
+					file.write("\s\s#{item2.fruit_name.downcase}:\n")
+					file.write("\s\s\sstock: #{item2.stock}\n")
+				end
+			end
+			file.write("Date:\s#{@date}")
+		end
+	end
+end
+
+
 
 class Shop
+	include FruitDatabase
 
 	def initialize
 		@list =[]
 		@count = 0
-		load_yaml
-		print_menu
-	end
-
-	def print_menu
-		print `clear`
-		puts "---------------------".green
-		puts "|                   |".green
-		puts "|  ALEX'S EMPORIUM  |".green
-		puts "|                   |".green
-		puts "---------------------".green
-		puts
-		puts "Choose an Operation:"
-		puts "a.) Register a fruit"
-		puts "b.) Buy a fruit"
-		puts "c.) Update a fruit stock"
-		puts "d.) Check fruit stocks"
-		puts
-		puts "x.) Exit".red
-		puts
-		puts "Select an option(a b c d or x):"
-		user_input
 	end
 
 	def user_input
@@ -49,30 +76,53 @@ class Shop
 			print `clear`
 			check_stock
 		when "x"
-			add_info_to_yaml
+			add_info_to_database
 			puts "Goodbye! :)"
+			exit
 		else
 			puts "Input incorrect, try again"
 			user_input
 		end
 	end
 
+
+	def print_menu
+		print `clear`
+		puts "---------------------".green
+		puts "|                   |".green
+		puts "|  ALEX'S EMPORIUM  |".green
+		puts "|                   |".green
+		puts "---------------------".green
+		puts
+		puts "Choose an Operation:"
+		puts "a.) Register a fruit"
+		puts "b.) Buy a fruit"
+		puts "c.) Update a fruit stock"
+		puts "d.) Check fruit stocks"
+		puts
+		puts "x.) Exit".red
+		puts
+		puts "Select an option(a b c d or x):".cyan
+		user_input
+	end
+	
+
 	def register_fruit
+		list_fruit
 		check = true
 		puts "Enter a fruit name"
 		fruit_name = gets.chomp.downcase
-		@list.each do |pre_item|
-			pre_item.fruit_list.each do |item|
-				if fruit_name == item.fruit_name 
+		@list.each do |item|
+			item.fruit_list.each do |item2|
+				if fruit_name == item2.fruit_name 
 					puts "We already have that in stock, try again"
 					check = false
 					register_fruit
 				end
 			end
 		end
-
 		if check == true
-			second_check =false
+			second_check = false
 			puts "Enter a fruit supplier"
 			source = gets.chomp.capitalize
 			puts "Enter the stock"
@@ -80,7 +130,7 @@ class Shop
 			@list.each do |item|
 				if source == item.fruit_sources_name 
 					fruit_obj = Fruit.new(fruit_name,stock)
-					item.addd_new_fruit(fruit_obj)
+					item.add_new_fruit(fruit_obj)
 					second_check = true
 				end
 			end
@@ -89,7 +139,20 @@ class Shop
 				fruit_obj = FruitSupplier.new(source,fruit_hash)
 				add(fruit_obj)
 			end
-			print_menu
+			puts "Do you want to add another?".cyan
+			while(true)
+				input = gets.chomp.downcase
+				case input 
+				when "y"
+					print `clear`
+					register_fruit
+					break
+				when "n"
+					print_menu
+					break
+				end
+				puts "incorrect(y or n)"
+			end
 		end
 	end
 
@@ -110,14 +173,13 @@ class Shop
 	end
 
 	def buy_a_fruit
-		
 		input = gets.chomp
 		proceed = false 
 		@list.each do |pre_item|
 			pre_item.fruit_list.each do |item|
 				if input == item.fruit_name 
 					if item.stock.to_i > 1 
-						puts "There are #{item.stock} #{item.fruit_name}'s left, how many do you want?".cyan
+						puts "There are #{item.stock} #{item.fruit_name}s left, how many do you want?".cyan
 						input = gets.chomp.to_i
 						item.remove_stock(input)
 						puts "Purchase Complete".blue
@@ -134,8 +196,8 @@ class Shop
 							return_to_menu 
 						end
 					else
-						puts "There are none left".cyan
-						print_menu
+						puts "Sorry, there are no #{item.fruit_name}s left, choose another item".cyan
+						buy_a_fruit
 					end
 					proceed = true
 				end	
@@ -148,6 +210,7 @@ class Shop
 			buy_a_fruit
 		end
 	end
+
 	def admin_check
 		print `clear`
 		if @count <= 3
@@ -155,10 +218,8 @@ class Shop
 			username = gets.chomp
 			print"Password: "
 			password = STDIN.noecho(&:gets).chomp
-
 			if username == "admin" && password == "password"
 				print`clear`
-				
 				@count = 0
 				list_fruit
 				puts "What fruit do you want to update stock?".cyan
@@ -175,17 +236,16 @@ class Shop
 	end
 
 	def update_fruit
-		
 		proceed = false
 		fruit = gets.chomp.capitalize
 		@list.each do |pre_item|
 			pre_item.fruit_list.each do |item|
 				if fruit == item.fruit_name.capitalize 
-					puts "There are #{item.stock} #{item.fruit_name}'s in stock, what do you want to change it to?".cyan
+					puts "There are #{item.stock} #{item.fruit_name}s in stock, what do you want to change it to?".cyan
 					value = gets.chomp.to_i
 					item.change_stock(value)
 					proceed = true
-					puts "There are now #{item.stock} #{item.fruit_name}'s in stock".cyan
+					puts "There are now #{item.stock} #{item.fruit_name}s in stock".cyan
 				end	
 			end	
 		end 
@@ -193,7 +253,8 @@ class Shop
 			puts "fruit is not in stock or does not exist, try again".cyan
 			update_fruit
 		else
-			puts " Do you want to edit another fruits stock?(y or n)"
+			@date = Time.now.strftime("%d/%m/%Y %H:%M")
+			puts "Do you want to edit another fruits stock?(y or n)".cyan
 			while(true)
 				input = gets.chomp.downcase
 				if input == "y"
@@ -213,6 +274,7 @@ class Shop
 	end
 
 	def check_stock
+		
 		@list.each do |item|
 			puts "#{item.fruit_sources_name}".cyan
 			item.fruit_list.each do |item2|
@@ -227,46 +289,24 @@ class Shop
 			end
 		end
 		puts
+		puts "Last Updated: #{@date}".green
+		puts
 		return_to_menu
 	end
 
 	def return_to_menu
 		puts "Do you want to go back to the menu (y or n):"
 		answer = gets.chomp.downcase
-
 		case answer
 		when "y"
 			print_menu
 		when "n"
-			
-			add_info_to_yaml
+			add_info_to_database
 			puts`clear`
 			puts "Goodbye! :)"
+			exit
 		else
 			puts "Please enter the right response"
-		end
-	end
-
-	def add_info_to_yaml
-		File.open("stock.yml", "w") do |file|
-			file.write("fruits:\n")
-			@list.each do |item|
-				file.write("\s#{item.fruit_sources_name.capitalize}:\n")
-				item.fruit_list.each do |item2|
-					file.write("\s\s#{item2.fruit_name.downcase}:\n")
-					file.write("\s\s\sstock: #{item2.stock}\n")
-				end
-			end
-		end
-	end
-
-	def load_yaml
-		@stock = YAML.load_file("stock.yml")
-		@info = @stock['fruits']
-		@info.keys.each_with_index do |item,index|
-			@fruit_hash = @info[item]
-			fruit_obj = FruitSupplier.new(item,@fruit_hash)
-			add(fruit_obj)
 		end
 	end
 
@@ -276,45 +316,7 @@ class Shop
 
 end
 
-class Fruit
-	attr_reader :fruit_name,:stock,:fruit_sources
-
-	def initialize(fruit_name,stock)
-		@fruit_name = fruit_name
-		@stock = stock 
-	end
-
-	def remove_stock(input_stock)
-		if input_stock <= @stock
-			@stock = @stock - input_stock
-		end
-	end
-
-	def change_stock(input_stock)
-		@stock = input_stock
-	end
-end
-
-
-class FruitSupplier
-	attr_reader :fruit_sources_name,:fruit_list
-	def initialize(fruit_sources_name,supplier_hash)
-		@fruit_list =[]
-		@supplier_hash = supplier_hash
-		@fruit_sources_name = fruit_sources_name
-		store_fruit
-	end
-
-	def store_fruit
-		@supplier_hash.keys.each_with_index do |item,index|
-			fruit_obj = Fruit.new(item,@supplier_hash[item]['stock'])
-			@fruit_list.push(fruit_obj)
-		end
-	end
-
-	def addd_new_fruit(fruit_obj)
-		@fruit_list.push(fruit_obj)
-	end
-end
 
 shop = Shop.new
+shop.load_database
+shop.print_menu
